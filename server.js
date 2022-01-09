@@ -2,6 +2,8 @@ const connectToDb = require('./db/connection');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const consoleTable = require('console.table');
+const db = require('./db/connection');
+const { connect } = require('./db/connection');
 
 
 function startTracking () {
@@ -92,8 +94,48 @@ function startTracking () {
     }
 
     function addEmployee() {
-        console.log('employee added');
-        startTracking();
+        
+        inquirer.prompt([
+            {
+            type: 'input',
+            name: 'newFirstName',
+            message: '=========== add an employee =========',
+            message: 'First name? :'
+            },
+            {
+                type: 'input',
+                name: 'newLastName',
+                message: 'Last name? :'
+
+            },
+            {
+                type: 'input',
+                name: 'newEmpRoleId',
+                message: 'What is your role ID? :'
+            },
+            {
+                type: 'input',
+                name: 'newEmpManagerId',
+                message: 'What is the ID of your manager? :'
+            }
+        ])
+        .then(function (selectedAnswers) {
+            connectToDb.connect(function (err) {
+                if (err) throw err;
+
+                connectToDb.query(`NSERT INTO employee SET ?`, {
+                    first_name: selectedAnswers.newFirstName,
+                    last_name: selectedAnswers.newLastName,
+                    role_id: selectedAnswers.newEmpRoleId,
+                    manager_id: selectedAnswers.newEmpManagerId
+                },
+                function( err, result) {
+                    if (err) throw err;
+                    console.log('\n');
+                }
+                )
+            })
+        })
     }
 
     function openRoles() {

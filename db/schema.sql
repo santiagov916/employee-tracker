@@ -16,5 +16,5 @@ CREATE TABLE employees (
     last_name VARCHAR(30),
     role_id INTEGER,
     manager_id INTEGER
-)
+);
 
