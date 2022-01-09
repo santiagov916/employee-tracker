@@ -1,3 +1,4 @@
-DROP DATABASE IF EXISTS emps;
-CREATE DATABASE emps;
-USE emps;
+SELECT * FROM departments;
+SELECT * FROM roles;
+SELECT * FROM emps;
+

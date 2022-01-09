@@ -3,7 +3,6 @@ const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const consoleTable = require('console.table');
 const db = require('./db/connection');
-const { connect } = require('./db/connection');
 
 
 function startTracking () {
@@ -43,6 +42,8 @@ function startTracking () {
                 addEmployee();
             } else if (response.mainChoices == 'Update existing employee') {
                 updateEmployee();
+            } else if (response.mainChoices == 'Update existing role') {
+                updateRole();
             } else if (response.mainChoices == 'Exit') {
                 process.exit();
             }
@@ -171,6 +172,10 @@ function startTracking () {
     function updateEmployee() {
         console.log('Employee info updated');
         startTracking();
+    }
+
+    function updateRole() {
+
     }
 
     

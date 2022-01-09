@@ -1,3 +1,8 @@
+DROP DATABASE IF EXISTS emps;
+CREATE DATABASE emps;
+
+USE emps;
+
 CREATE TABLE departments (
     id INTEGER AUTO_INCREMENT PRIMARY KEY,
     dep_name VARCHAR(20) NOT NULL
@@ -6,15 +11,18 @@ CREATE TABLE departments (
 CREATE TABLE roles (
     id INTEGER AUTO_INCREMENT PRIMARY KEY NOT NULL,
     title VARCHAR(30) NOT NULL,
-    salary DECIMAL,
-    dep_id INTEGER
+    salary DECIMAL(13,4),
+    dep_id INTEGER,
+    FOREIGN KEY (dep_id) REFERENCES departments(id) ON DELETE SET NULL
 );
 
 CREATE TABLE employees (
     id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
-    first_name VARCHAR(30),
-    last_name VARCHAR(30),
+    first_name VARCHAR(30) NOT NULL,
+    last_name VARCHAR(30) NOT NULL,
     role_id INTEGER,
-    manager_id INTEGER
+    manager_id INTEGER,
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL,
+    FOREIGN KEY (manager_id) REFERENCES employees(id) ON DELETE SET NULL
 );
 
