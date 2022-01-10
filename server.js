@@ -116,7 +116,7 @@ function startTracking () {
             },
             {
                 type: 'list',
-                name: 'backToMainMenu',
+                name: 'backToMain',
                 message: 'New Role added PRESS ENTER',
                 choices: ['Main Menu']
             }
@@ -135,7 +135,7 @@ function startTracking () {
                      console.log('\n')
                  })
             })
-            if (response.backToMainMenu === 'Main Menu') {
+            if (response.backToMain === 'Main Menu') {
                 startTracking();
             };
         })
@@ -317,7 +317,42 @@ function startTracking () {
     // update dep, role, emp.
 
     function updateEmployee() {
-    }
+
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'IdOfEmpUpdate',
+                message: "What is the ID of the employee we'll update?"
+            },
+            {
+                type: 'input',
+                name: 'newRoleIdUpdate',
+                message: 'What is the new role ID of the the employee?',
+            },
+            {
+                type: 'list',
+                name: 'backToMain',
+                message: 'Employee role updated successfully, PRESS ENTER TO RETURN TO MAIN MENU',
+                choices: ['Main menu']
+            }
+        ]).then(function (response) {
+            connectToDb.connect(function (err) {
+                if (err) throw err;
+
+                connectToDb.query(`UPDATE employees SET employees.role_id = ? WHERE employees.id = ?;`, [
+                    response.IdOfEmpUpdate,
+                    response.newRoleIdUpdate
+                ],
+                    function (err, result) {
+                        if (err) throw err;
+                        console.log('\n');
+                    });
+                if (response.backToMain === 'Main menu') {
+                    startTracking();
+                };
+            });
+        });
+    };
 
     function updateEmpManager() {
 
