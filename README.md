@@ -18,21 +18,20 @@
 
   ## Description
 
-  start description
+  To help employers, managers, supervisors, etc. keep track of their growing business
   
   ## Motivation
 
-  starter motivation
+  I just wanted to help those that found this useful, work on my database skills, making queries, and much more skills that this project involved!
 
   ## Usage
-
-  node server.js or node server
+  keep track of all aspects of your businees, employees, departments, roles, budgets, and many more coming sooN!
 
   ## Installation 
 
   ### Dependencies: node.js , jest , mysql , mysql2 , inquirer
-  ### To install: npm i OR npm install
-  ### CLI to start: node server.js or node server
+  ### To install: npm i OR npm install mysql2 inquirer
+  ### CLI to start: node server.js or npm start
 
   ## Contributors
 

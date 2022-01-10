@@ -2,7 +2,6 @@ const connectToDb = require('./db/connection');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const consoleTable = require('console.table');
-const db = require('./db/connection');
 
     // main function of the program
 
@@ -194,7 +193,7 @@ function startTracking () {
         })
     }
 
-    // view existing dep, role, emp.
+    // view existing dep, role, emp., managers, budgets, dep. by emp.
 
     function openDepartment() {
 
@@ -314,7 +313,7 @@ function startTracking () {
         });
     }
 
-    // update dep, role, emp.
+    // update emp.
 
     function updateEmployee() {
 
@@ -353,12 +352,6 @@ function startTracking () {
             });
         });
     };
-
-    function updateEmpManager() {
-
-    }
-
-
 
     // call function to begin tracking
     startTracking();
