@@ -73,25 +73,77 @@ function startTracking () {
         inquirer
         .prompt([
             {
-                message: 'Department name:',
                 type: 'input',
                 name: 'depName',
+                message: 'Department name:',
+            },
+            {
+                type: 'list',
+                name: 'backToMain',
+                message: 'Department added, PRESS ENTER',
+                choices: ['Main Menu']
             }
         ])
         .then((response) => {
-            connectToDb.query('INSERT INTO department (dep_name) VALUES (?)', response.depName, (err, result) => {
-                 if (err) console.log(err);
+            connectToDb.connect(function (err) {
+                if (err) throw err;
 
-                 console.table('Insert as ID' + result.insertId);
-
-                 startTracking();
+                connectToDb.query(`INSERT INTO departments SET ?`, {
+                    dep_name: response.depName
+                },
+                function (err, result) {
+                    if (err) throw err;
+                    console.log('\n');
+                });
             })
+            if (response.backToMain === 'Main Menu') {
+                startTracking();
+            };
         })
     };
 
     function addRole() {
-        console.log('new role added');
-        startTracking();
+       inquirer.prompt([
+           {
+            type: 'input',
+            name: 'newRoleTitle',
+            message: 'What is the title of the new role?'
+           },
+           {
+               type: 'input',
+               name: 'newRoleSalary',
+               message: 'What is the salary of the new role?'
+           },
+           {
+               type: 'input',
+               name: 'newRoleDepId',
+               message: 'What is the department ID for the new role?'
+           },
+           {
+               type: 'list',
+               name: 'backToMainMenu',
+               message: 'New Role added PRESS ENTER',
+               choices: ['Main Menu']
+           }
+       ])
+       .then((response) => {
+           connectToDb.connect(function (err) {
+               if (err) throw err;
+
+               connectToDb.query(`INSERT INTO roles SET ?`, {
+                   title: response.newRoleTitle,
+                   salary: response.newRoleSalary,
+                   dep_id: response.newRoleDepId
+               },
+                function (err, result) {
+                    if (err) throw err;
+                    console.log('\n')
+                })
+           })
+           if (response.backToMainMenu === 'Main Menu') {
+               startTracking();
+           };
+       })
     }
 
     function addEmployee() {
@@ -118,24 +170,32 @@ function startTracking () {
                 type: 'input',
                 name: 'newEmpManagerId',
                 message: 'What is the ID of your manager? :'
+            },
+            {
+                type: 'list',
+                name: 'backToMain',
+                message: 'New employee added PRESS ENTER',
+                choices: ['Main Menu']
             }
         ])
-        .then(function (selectedAnswers) {
+        .then(function (response) {
             connectToDb.connect(function (err) {
                 if (err) throw err;
 
-                connectToDb.query(`NSERT INTO employee SET ?`, {
-                    first_name: selectedAnswers.newFirstName,
-                    last_name: selectedAnswers.newLastName,
-                    role_id: selectedAnswers.newEmpRoleId,
-                    manager_id: selectedAnswers.newEmpManagerId
+                connectToDb.query(`INSERT INTO employees SET ?`, {
+                    first_name: response.newFirstName,
+                    last_name: response.newLastName,
+                    role_id: response.newEmpRoleId,
+                    manager_id: response.newEmpManagerId
                 },
                 function( err, result) {
                     if (err) throw err;
                     console.log('\n');
-                }
-                )
+                })
             })
+            if (response.backToMain === 'Main Menu') {
+                startTracking();
+            }
         })
     }
 
