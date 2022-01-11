@@ -3,10 +3,16 @@ const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const consoleTable = require('console.table');
 const db = require('./db/connection');
+const logo = require('asciiart-logo');
 
     // main function of the program
 
-function startTracking () {
+    function startTracking () {
+
+        // logo
+        const logoText = logo({ name: 'Employee Tracker '}).render();
+
+        console.log(logoText);
 
         // initial startup
 
@@ -21,16 +27,11 @@ function startTracking () {
                 'View roles',
                 'View employees',
                 'View employees by department',
-                'View managers',
                 'Department Budget',
                 'Add new department',
                 'Add new role',
                 'Add new employee',
                 'Update existing employee',
-                'Update existing employee manager',
-                'Remove an Employee',
-                'Remove a department',
-                'Remove a role',
                 'Exit'
                 ]
             }
@@ -44,8 +45,6 @@ function startTracking () {
                 openEmployees();
             } else if (response.mainChoices == 'View employees by department') {
                 openDepByEmp();
-            } else if (response.mainChoices == 'View managers') {
-                openManagers();
             } else if (response.mainChoices == 'Department Budget') {
                 openBudget()
             } else if (response.mainChoices == 'Add new department') {
@@ -54,16 +53,6 @@ function startTracking () {
                 addRole();
             } else if (response.mainChoices == 'Add new employee') {
                 addEmployee();
-            } else if (response.mainChoices == 'Update existing employee') {
-                updateEmployee();
-            } else if (response.mainChoices == 'Update existing employee        manager') {
-                updateEmpManager();
-            } else if (response.mainChoices == 'Remove an employee') {
-                deleteEmployee();
-            } else if (response.mainChoices == 'Remove a department') {
-                deleteDepartment();
-            } else if (response.mainChoices == 'Remove a role') {
-                deleteRole();
             } else if (response.mainChoices == 'Exit') {
                 process.exit();
             }
@@ -92,8 +81,8 @@ function startTracking () {
             connectToDb.connect(function (err) {
                 if (err) throw err;
 
-                connectToDb.query(`INSERT INTO departments SET ?`, {
-                    dep_name: response.depName
+                connectToDb.query(`INSERT INTO department SET ?`, {
+                    name: response.depName
                 },
                 function (err, result) {
                     if (err) throw err;
@@ -134,10 +123,10 @@ function startTracking () {
             connectToDb.connect(function (err) {
                 if (err) throw err;
  
-                connectToDb.query(`INSERT INTO roles SET ?`, {
+                connectToDb.query(`INSERT INTO role SET ?`, {
                     title: response.newRoleTitle,
                     salary: response.newRoleSalary,
-                    dep_id: response.newRoleDepId
+                    department_id: response.newRoleDepId
                 },
                  function (err, result) {
                      if (err) throw err;
@@ -186,7 +175,7 @@ function startTracking () {
             connectToDb.connect(function (err) {
                 if (err) throw err;
 
-                connectToDb.query(`INSERT INTO employees SET ?`, {
+                connectToDb.query(`INSERT INTO employee SET ?`, {
                     first_name: response.newFirstName,
                     last_name: response.newLastName,
                     role_id: response.newEmpRoleId,
@@ -210,7 +199,7 @@ function startTracking () {
         connectToDb.connect(function (err) {
             if (err) throw err;
 
-            connectToDb.query(`SELECT * FROM departments`, function (err, result) { 
+            connectToDb.query(`SELECT department.id, department.name FROM department;`, function (err, result) { 
             if (err) console.log(err);
         
             console.table (result);
@@ -226,7 +215,7 @@ function startTracking () {
         connectToDb.connect(function (err) {
             if (err) throw err;
 
-            connectToDb.query(`SELECT * FROM roles`, function (err,
+            connectToDb.query(`SELECT role.id, role.title, department.name AS department, role.salary FROM role LEFT JOIN department on role.department_id = department.id;`, function (err,
                 result) {
                     if (err) console.log(err);
 
@@ -241,7 +230,7 @@ function startTracking () {
         connectToDb.connect(function (err) {
             if (err) throw err;
             
-            connectToDb.query(`SELECT * FROM employees`, function (err,
+            connectToDb.query(`SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id LEFT JOIN employee manager on manager.id = employee.manager_id;`, function (err,
                 result) {
                     if (err) console.log(err);
 
@@ -251,38 +240,15 @@ function startTracking () {
         })
     }
 
-    function openManagers() {
-        connectToDb.connect(function (err) {
-            if (err) throw err;
-
-            connectToDb.query(`SELECT * FROM employees WHERE role_id = 1`, function (err, result) {
-                if (err) throw err;
-                console.log('\n');
-                console.table(result);
-            });
-        })
-
-        inquirer.prompt({
-            type: 'list',
-            name: 'backToMain',
-            message: 'Here all the Managers, PRESS ENTER TO RETURN TO  MAIN MENU',
-            choices: ['Main menu']
-        }). then (function (response) {
-            if (response.backToMain === 'Main menu') {
-                startTracking();
-            };
-        });
-    };
-
     function openBudget() {
         connectToDb.connect(function (err) {
             if (err) throw err;
 
-            connectToDb.query(`SELECT departments.id, departments.dep_name, roles.dep_id,
-            SUM(roles.salary) AS Department_budget
-            FROM departments
-            INNER JOIN roles ON roles.dep_id = departments.id
-            GROUP BY departments.id`, function (err, result) {
+            connectToDb.query(`SELECT department.id, department.name, role.department_id,
+            SUM(role.salary) AS Department_budget
+            FROM department
+            INNER JOIN role ON role.department_id = department.id
+            GROUP BY department.id`, function (err, result) {
                 if (err) throw err;
                 console.log('\n');
                 console.table(result);
@@ -305,7 +271,7 @@ function startTracking () {
         connectToDb.connect(function (err) {
             if (err) throw err;
 
-            connectToDb.query(`SELECT employees.first_name, employees.last_name, employees.role_id, roles.dep_id, departments.dep_name FROM employees INNER JOIN roles ON employees.role_id = roles.id INNER JOIN departments ON roles.dep_id = departments.id;`, function (err, result) {
+            connectToDb.query(`SELECT employee.first_name, employee.last_name, employee.role_id, role.department_id, department.name FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id;`, function (err, result) {
                 if (err) throw err;
                 // console.log('\n');
                 console.table(result);
@@ -321,137 +287,6 @@ function startTracking () {
                 startTracking();
             };
         });
-    }
-
-    // update emp.
-
-    function updateEmployee() {
-
-        inquirer.prompt([
-            {
-                type: 'input',
-                name: 'IdOfEmpUpdate',
-                message: "What is the ID of the employee we'll update?"
-            },
-            {
-                type: 'input',
-                name: 'newRoleIdUpdate',
-                message: 'What is the new role ID of the the employee?',
-            },
-            {
-                type: 'list',
-                name: 'backToMain',
-                message: 'Employee role updated successfully, PRESS ENTER TO RETURN TO MAIN MENU',
-                choices: ['Main menu']
-            }
-        ]).then(function (response) {
-            connectToDb.connect(function (err) {
-                if (err) throw err;
-
-                connectToDb.query(`UPDATE employees SET employees.role_id = ? WHERE employees.id = ?;`, [
-                    response.IdOfEmpUpdate,
-                    response.newRoleIdUpdate
-                ],
-                    function (err, result) {
-                        if (err) throw err;
-                        console.log('\n');
-                    });
-                if (response.backToMain === 'Main menu') {
-                    startTracking();
-                };
-            });
-        });
-    };
-
-    // delete emp., dep., role
-
-    function deleteEmployee() {
-        inquirer.prompt([
-            {
-                type: 'input',
-                name: 'deleteEmpbyId',
-                message: 'What is the ID of the employee you want to terminate?'
-            },
-            {
-                type: 'list',
-                name: 'backToMain',
-                message: 'Employee deleted, PRESS ENTER TO GO BACK TO THE MAIN MENU',
-                choices: ['Main menu']
-            }
-        ]).then(function (response) {
-            connectToDb.connect(function (err) {
-                if (err) throw err;
-
-                connectToDb.query(`DELETE FROM employees WHERE ?`, { id: response.deleteEmpById },
-                function (err, result) {
-                    if (err) throw err;
-                    console.log('\n');
-                });
-                if (response.backToMain == 'Main menu') {
-                    startTracking();
-                }
-            });
-        })
-    }
-
-    function deleteDepartment() {
-        inquirer.prompt([
-            {
-                type: 'input',
-                name: 'deleteDepByName',
-                message: 'What is the name of the department you want to remove?'
-            },
-            {
-                type: 'list',
-                name: 'backToMain',
-                message: 'Department removed, PRESS ENTER TO GO TO MAIN MENU',
-                choices: ['Main menu']
-            }
-        ]).then(function(response) {
-            connectToDb.connect(function(err) {
-                if (err) throw err;
-
-                connectToDb.query(`DELETE FROM roles WHERE ?`, { id: response.deleteDepByName },
-                function (err, result) {
-                    if (err) throw err;
-                    console.log('\n')
-                });
-            });
-            if (response.backToMain == 'Main menu') {
-                startTracking();
-            }
-        })
-    }
-
-    function deleteRole() {
-        inquirer.prompt([
-            {
-                type: 'input',
-                name: 'deleteRoleById',
-                message: 'What is the role ID you want to remove?'
-            },
-            {
-                type: 'list',
-                name: 'backToMain',
-                message: 'Role removed, PRESS ENTER TO RETURN TO MAIN MENU',
-                choices: ['Main menu']
-            }
-        ]).then(function(response) {
-            connectToDb.connect(function(err) {
-                if (err) throw err;
-
-                connectToDb.query(`DELETE FROM roles WHERE ?`, { id: response.deleteRoleById },
-                
-                function(err, result) {
-                    if (err) throw err;
-
-                    console.log('\n');
-                })
-                if (response.backToMain == 'Main menu') {
-                    startTracking();
-                }
-            })
-        })
     }
 
     // call function to begin tracking
