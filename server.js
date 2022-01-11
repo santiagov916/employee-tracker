@@ -2,6 +2,7 @@ const connectToDb = require('./db/connection');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const consoleTable = require('console.table');
+const db = require('./db/connection');
 
     // main function of the program
 
@@ -27,6 +28,9 @@ function startTracking () {
                 'Add new employee',
                 'Update existing employee',
                 'Update existing employee manager',
+                'Remove an Employee',
+                'Remove a department',
+                'Remove a role',
                 'Exit'
                 ]
             }
@@ -54,6 +58,12 @@ function startTracking () {
                 updateEmployee();
             } else if (response.mainChoices == 'Update existing employee        manager') {
                 updateEmpManager();
+            } else if (response.mainChoices == 'Remove an employee') {
+                deleteEmployee();
+            } else if (response.mainChoices == 'Remove a department') {
+                deleteDepartment();
+            } else if (response.mainChoices == 'Remove a role') {
+                deleteRole();
             } else if (response.mainChoices == 'Exit') {
                 process.exit();
             }
@@ -352,6 +362,97 @@ function startTracking () {
             });
         });
     };
+
+    // delete emp., dep., role
+
+    function deleteEmployee() {
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'deleteEmpbyId',
+                message: 'What is the ID of the employee you want to terminate?'
+            },
+            {
+                type: 'list',
+                name: 'backToMain',
+                message: 'Employee deleted, PRESS ENTER TO GO BACK TO THE MAIN MENU',
+                choices: ['Main menu']
+            }
+        ]).then(function (response) {
+            connectToDb.connect(function (err) {
+                if (err) throw err;
+
+                connectToDb.query(`DELETE FROM employees WHERE ?`, { id: response.deleteEmpById },
+                function (err, result) {
+                    if (err) throw err;
+                    console.log('\n');
+                });
+                if (response.backToMain == 'Main menu') {
+                    startTracking();
+                }
+            });
+        })
+    }
+
+    function deleteDepartment() {
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'deleteDepByName',
+                message: 'What is the name of the department you want to remove?'
+            },
+            {
+                type: 'list',
+                name: 'backToMain',
+                message: 'Department removed, PRESS ENTER TO GO TO MAIN MENU',
+                choices: ['Main menu']
+            }
+        ]).then(function(response) {
+            connectToDb.connect(function(err) {
+                if (err) throw err;
+
+                connectToDb.query(`DELETE FROM roles WHERE ?`, { id: response.deleteDepByName },
+                function (err, result) {
+                    if (err) throw err;
+                    console.log('\n')
+                });
+            });
+            if (response.backToMain == 'Main menu') {
+                startTracking();
+            }
+        })
+    }
+
+    function deleteRole() {
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'deleteRoleById',
+                message: 'What is the role ID you want to remove?'
+            },
+            {
+                type: 'list',
+                name: 'backToMain',
+                message: 'Role removed, PRESS ENTER TO RETURN TO MAIN MENU',
+                choices: ['Main menu']
+            }
+        ]).then(function(response) {
+            connectToDb.connect(function(err) {
+                if (err) throw err;
+
+                connectToDb.query(`DELETE FROM roles WHERE ?`, { id: response.deleteRoleById },
+                
+                function(err, result) {
+                    if (err) throw err;
+
+                    console.log('\n');
+                })
+                if (response.backToMain == 'Main menu') {
+                    startTracking();
+                }
+            })
+        })
+    }
 
     // call function to begin tracking
     startTracking();
